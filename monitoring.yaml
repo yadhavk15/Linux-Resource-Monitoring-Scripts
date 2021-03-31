@@ -1,0 +1,25 @@
+---
+- hosts: hostname
+  
+  tasks:
+          - name: Get info
+            shell: |
+                echo "\nDisk Usage\n"
+                df -h
+                echo "\nRam Usage\n"
+                free -h -t
+                echo "\nCpu Usage: "
+                grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'
+                echo "\nNetwork Usage\n"
+                netstat
+                netstat -s
+                echo "\nOverall Usage\n"
+                vmstat 1 1 -S M
+
+            register: monitoring
+ 
+          - debug: msg={{ monitoring.stdout }}
+          - local_action: 
+                  module: copy 
+                  content: "{{ monitoring.stdout }}"
+                  dest: monitoring.txt        
